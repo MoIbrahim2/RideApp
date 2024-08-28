@@ -1,16 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 
 import { Ride } from 'src/entites/Ride';
 import { User } from 'src/entites/User';
 import { Repository } from 'typeorm';
 import { getDistance } from 'geolib';
+import { Driver } from 'src/entites/Driver';
 
 @Injectable()
 export class RidesService {
   constructor(
     @InjectRepository(Ride) private Ride: Repository<Ride>,
     @InjectRepository(User) private User: Repository<User>,
+    @InjectRepository(Driver) private Driver: Repository<Driver>,
   ) {}
   async sendRequest(
     userLocation: [string, string],
@@ -25,12 +27,12 @@ export class RidesService {
       );
   }
   async bindingRide(
-    userLocation: [string, string],
+    from: { lat: number; long: number },
     userId,
-    to: [string, string],
+    to: { lat: number; long: number },
   ) {
     try {
-      const drivers = await this.User.find();
+      const drivers = await this.Driver.find();
 
       let nearestDriver = null;
       let minDistance = Infinity;
@@ -38,12 +40,12 @@ export class RidesService {
       drivers.forEach((driver) => {
         const distance = getDistance(
           {
-            latitude: parseFloat(userLocation[0]),
-            longitude: parseFloat(userLocation[1]),
+            latitude: from.lat,
+            longitude: from.long,
           },
           {
-            latitude: parseFloat(driver.location[0]),
-            longitude: parseFloat(driver.location[1]),
+            latitude: driver.latitude,
+            longitude: driver.longitude,
           },
         );
         if (distance < minDistance) {
@@ -51,20 +53,21 @@ export class RidesService {
           nearestDriver = driver;
         }
       });
+      // Code for sending a notification to the nearest driver
 
-      const ride = this.Ride.create({
-        user: userId,
-        driver: nearestDriver.id,
-        from: userLocation,
-        to,
-        expectedPrice: 50,
-        startTime: new Date(Date.now()),
-      });
-      const newRide = await this.Ride.save(ride);
-      return {
-        message: `your driver will be ${nearestDriver.name} `,
-        newRide,
-      };
+      //     const ride = this.Ride.create({
+      //       user: userId,
+      //       driver: nearestDriver.id,
+      //       from: userLocation,
+      //       to,
+      //       expectedPrice: 50,
+      //       startTime: new Date(Date.now()),
+      //     });
+      //     const newRide = await this.Ride.save(ride);
+      //     return {
+      //       message: `your driver will be ${nearestDriver.name} `,
+      //       newRide,
+      // };
     } catch (err) {
       return { message: err.message, err };
     }

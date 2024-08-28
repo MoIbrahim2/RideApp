@@ -4,7 +4,7 @@ import { Acountries } from 'utils/countries_cities';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @Column()
@@ -31,8 +31,18 @@ export class User {
   @Column({ type: 'date' })
   birthday: Date;
 
-  @Column({ type: 'simple-array', nullable: true })
-  location: string[];
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number;
+
+  @Column({ type: 'date', nullable: true })
+  emailChangedAt: Date;
+
+  @Column({ type: 'float', nullable: true })
+  wallet: number;
+
   @OneToMany(() => Ride, (ride) => ride.user)
   userRides: Ride[];
   @Column({ default: false })

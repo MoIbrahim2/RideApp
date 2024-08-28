@@ -14,7 +14,8 @@ import * as bcrypt from 'bcrypt';
 export class Driver {
   @PrimaryGeneratedColumn()
   id: number;
-
+  @Column({ default: true })
+  isDriver: boolean;
   @Column()
   name: string;
 
@@ -62,15 +63,38 @@ export class Driver {
 
   @Column({ length: 17 })
   numberVehicleId: string;
+
+  // Verification and authentication properties
   @Column({ default: false })
   verified: boolean;
 
-  // @Column()
-  // carPhotos: string[];
+  @Column({ default: false })
+  accepted: boolean;
+
+  @Column({ default: false })
+  startDriving: boolean;
+  // Lat and Long
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number;
+
+  @Column({ type: 'longtext', nullable: true })
+  carPhotos: string;
+
   @Column()
   personalIdNumber: string;
+
+  @Column({ type: 'date', nullable: true })
+  emailChangedAt: Date;
+
+  @Column({ type: 'float', nullable: true })
+  wallet: number;
+
   @OneToMany(() => Ride, (ride) => ride.driver)
   driverRides: Ride[];
+
   @BeforeInsert()
   async beforeInsert() {
     if (this.password) this.password = await bcrypt.hash(this.password, 12);

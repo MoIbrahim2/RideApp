@@ -10,11 +10,11 @@ export class RidesController {
   @UseGuards(AuthGuard, RestrictTO('user'))
   @Post('/bindingRide')
   async bindingRide(@Req() req: Request, @Body() data) {
-    return this.rideService.bindingRide(
-      req['user'].location,
-      req['user'].id,
-      data.to,
-    );
+    // return this.rideService.bindingRide(
+    //   req['user'].location,
+    //   req['user'].id,
+    //   data.to,
+    // );
   }
   @UseGuards(AuthGuard, RestrictTO('driver'))
   @Patch('/finishRide')

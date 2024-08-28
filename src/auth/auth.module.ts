@@ -9,6 +9,7 @@ import { AuthGuard } from './guards/auth/auth.guard';
 import { Driver } from 'src/entites/Driver';
 import { ScheduleModule } from '@nestjs/schedule';
 import { VerficationCode } from 'src/entites/VerificationCode';
+import { Refactoring } from 'utils/Refactoring';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { VerficationCode } from 'src/entites/VerificationCode';
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
     }),
   ],
-  providers: [AuthService, AuthGuard],
+  providers: [AuthService, AuthGuard, Refactoring],
   controllers: [AuthController],
   exports: [AuthService, AuthGuard, JwtModule],
 })

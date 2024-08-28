@@ -1,7 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
   IsDate,
-  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -9,7 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Acountries, getCountryCode } from 'utils/countries_cities';
+import { Acountries } from 'utils/countries_cities';
 
 export class CreateUserDto {
   @IsNotEmpty()

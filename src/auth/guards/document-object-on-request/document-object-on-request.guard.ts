@@ -14,7 +14,7 @@ import { User } from 'src/entites/User';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class DocumentObjectOnRequestGuard implements CanActivate {
   constructor(
     @InjectRepository(User) private User: Repository<User>,
     @InjectRepository(Driver) private Driver: Repository<Driver>,
@@ -51,19 +51,6 @@ export class AuthGuard implements CanActivate {
     if (!userOrDriver) {
       throw new HttpException(
         'The user or driver belonging to this token no longer exists. Please login again',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-    if (!userOrDriver.verified) {
-      throw new HttpException(
-        'You are not verified, please verify the account first ',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    if (userOrDriver.isDriver && !userOrDriver.accepted) {
-      throw new HttpException(
-        'You are not accepted yet, please wait until the admin accept the account first ',
         HttpStatus.UNAUTHORIZED,
       );
     }

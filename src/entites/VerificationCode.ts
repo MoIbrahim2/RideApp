@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { Driver } from './Driver';
-import { IsNotEmpty } from 'class-validator';
 
 @Entity()
 export class VerficationCode {
@@ -32,4 +31,7 @@ export class VerficationCode {
 
   @Column({ type: 'timestamp', nullable: true })
   expiredAt: Date;
+
+  @Column({ default: true })
+  forVerification: boolean;
 }
