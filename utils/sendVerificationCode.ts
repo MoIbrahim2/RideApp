@@ -8,9 +8,10 @@ const client = twilio(accountSid, authToken);
 
 // Function to send SMS
 export const sendSms = async (to, message) => {
-  await client.messages.create({
+  const sms = await client.messages.create({
     body: message,
     from: 'whatsapp:+14155238886',
     to,
   });
+  return sms;
 };

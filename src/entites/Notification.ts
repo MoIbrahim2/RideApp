@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -16,11 +17,17 @@ export class Notification {
   @Column('text')
   message: string;
 
-  @ManyToOne(() => User, { eager: true })
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Column('json')
+  data: any;
+
+  @ManyToOne(() => User, { eager: true, nullable: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => Driver, { eager: true })
+  @ManyToOne(() => Driver, { eager: true, nullable: true })
   @JoinColumn({ name: 'driverId' })
   driver: Driver;
 }

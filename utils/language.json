@@ -1,0 +1,28 @@
+{
+  "ar": {
+    "signup_users": "تم إرسال رمز التحقق إلى الواتساب",
+    "signup_drivers": "تم إرسال الطلب بشكل صحيح، يرجى التحقق من الحساب",
+    "login_users_drivers": "تم تسجيل الدخول بنجاح",
+    "approve_driver": "الموافقة على الطلب برقم الهاتف {phone}",
+    "request_change_email_or_phone": "تم إرسال رمز التحقق الأمني ​​إلى بريدك الإلكتروني",
+    "changing_email_or_phone": "لقد تم تحديث ملفك الشخصي بنجاح",
+    "logout": "تم تسجيل الخروج بنجاح",
+    "send_verification_code": "رمز OTP الخاص بك {otp}. صالح لمدة 10 دقائق فقط، انتقل إلى هذا الرابط {link} للتحقق من حسابك",
+    "verify_otp_users": "تم التحقق من الحساب",
+    "verify_otp_drivers": "تم التحقق من الحساب، في انتظار الموافقة",
+    "create_new_otp": "جديد otp تم ارسال رمز "
+  },
+  "en": {
+    "signup_users": "Verification code sent to whatsapp",
+    "signup_drivers": "Application sent correctly verify the account",
+    "login_users/drivers": "Successfully logged in",
+    "approve_driver": "Application with {phone} phone number approve",
+    "request_change_email_or_phone": "security code verification sent to your email",
+    "changing_email_or_phone": "Your profile has been updated successfully",
+    "logout": "logged out successfully",
+    "send_verification_code": "Your OTP code {otp}. only valid for 10 minutes, Go to this link {link} to verify your account",
+    "verify_otp_users": "Account has been verified",
+    "verify_otp_drivers": "Account has been verified, waiting for approval",
+    "create_new_otp": "New OTP code has been sent"
+  }
+}

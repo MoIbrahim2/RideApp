@@ -1,12 +1,17 @@
 import {
+  Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
   Post,
   Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,9 +19,9 @@ import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
 import { RestrictTO } from 'src/auth/guards/restrict-to/restrict-to.guard';
 import { DriverService } from 'src/drivers/services/driver/driver.service';
-import { Driver } from 'src/entites/Driver';
-import { Repository } from 'typeorm';
+import { LocationDto } from 'src/DTOs/locationDto.dto';
 
+@UsePipes(ValidationPipe)
 @Controller('driver')
 export class DriverController {
   constructor(private driverService: DriverService) {}
@@ -41,5 +46,14 @@ export class DriverController {
   @Patch('/startAcceptingRides')
   async startAcceptingRides(@Req() req: Request) {
     return this.driverService.startAcceptingRides(req['user']);
+  }
+  @UseGuards(AuthGuard, RestrictTO('driver'))
+  @Patch('/setDriverLocation')
+  async setDriverLocation(@Body() location: LocationDto, @Req() req: Request) {
+    return this.driverService.setDriverLocation(
+      location.destinationLat,
+      location.destinationLong,
+      req['user'],
+    );
   }
 }

@@ -1,35 +1,39 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  OneToOne,
   JoinColumn,
   Column,
   ManyToOne,
+  CreateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from './User';
 import { Driver } from './Driver';
+import { LocationDto } from 'src/DTOs/locationDto.dto';
+import { NearbyDriver } from 'src/DTOs/nearbyDriver';
 
 @Entity({ name: 'rides' })
 export class Ride {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column()
+  @Column({ nullable: true })
   expectedPrice: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   active: boolean;
 
-  @Column({ type: 'simple-array' })
-  from: string[];
+  @Column('json')
+  from: LocationDto;
 
-  @Column({ type: 'simple-array' })
-  to: string[];
+  @Column('json')
+  to: LocationDto;
 
   @Column({ nullable: true })
   actualPrice: number;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   startTime: Date;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -41,5 +45,33 @@ export class Ride {
 
   @ManyToOne(() => Driver, (driver) => driver.driverRides)
   @JoinColumn({ name: 'driverId' })
-  driver: User;
+  driver: Driver;
+
+  @Column({ type: 'boolean', default: false })
+  rideAccepted: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  acceptanceTime: Date;
+
+  @CreateDateColumn()
+  time: Date;
+
+  @Column('json', { nullable: true })
+  nearbyDrivers: NearbyDriver[];
+
+  @ManyToMany(() => Driver)
+  @JoinTable()
+  candidatesDrivers: Driver[];
+
+  @Column('json', { nullable: true })
+  priceOffers: { driverId: number; price: number }[];
+
+  @Column({ type: 'enum', enum: ['wallet', 'cash'] })
+  paymentMethod: string;
+
+  @Column('timestamp', { nullable: true })
+  scheduledTo: Date;
+
+  @Column({ nullable: true })
+  userNotificationToken: string;
 }

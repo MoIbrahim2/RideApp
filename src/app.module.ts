@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -18,6 +18,13 @@ import { Transaction } from './entites/Transactions';
 import { FaqModule } from './faq/faq.module';
 import { FAQ } from './entites/FAQ';
 import { NotificationModule } from './notification/notification.module';
+import { Notification } from './entites/Notification';
+import { AppRating } from './entites/AppRating';
+import { ChoosenLanguageMiddleware } from './middlewares/choosen-language/choosen-language.middleware';
+
+import { Refactoring } from 'utils/Refactoring';
+import { VoucherModule } from './voucher/voucher.module';
+import { Voucher } from './entites/Vouchers';
 
 @Module({
   imports: [
@@ -45,6 +52,8 @@ import { NotificationModule } from './notification/notification.module';
         Transaction,
         FAQ,
         Notification,
+        AppRating,
+        Voucher,
       ],
       // autoLoadEntities: true,
     }),
@@ -52,11 +61,17 @@ import { NotificationModule } from './notification/notification.module';
     RidesModule,
     AuthModule,
     DriversModule,
-    TypeOrmModule.forFeature([Transaction, User, Driver]),
+
+    TypeOrmModule.forFeature([Transaction, User, Driver, AppRating]),
     FaqModule,
     NotificationModule,
+    VoucherModule,
   ],
   controllers: [AppController],
   providers: [AppService, HandlerFactoryService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ChoosenLanguageMiddleware).forRoutes('*');
+  }
+}

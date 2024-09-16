@@ -33,4 +33,7 @@ export class CreateDriverDTO extends CreateUserDto {
   @IsNotEmpty()
   @Length(14, 14, { message: 'personal Id must be exactly 14' })
   personalIdNumber: string;
+  @IsNotEmpty()
+  @IsEnum(['small', 'medium', 'family'])
+  sizeOfTheCar: string;
 }

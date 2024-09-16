@@ -4,11 +4,14 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   BeforeInsert,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 
 import { Ride } from './Ride';
 import { Acountries } from 'utils/countries_cities';
 import * as bcrypt from 'bcrypt';
+import { AppRating } from './AppRating';
 
 @Entity({ name: 'drivers' })
 export class Driver {
@@ -43,9 +46,6 @@ export class Driver {
   @Column({ type: 'date' })
   birthday: Date;
 
-  @Column({ type: 'simple-array', nullable: true })
-  location: string[];
-
   @Column()
   carBrand: string;
 
@@ -64,7 +64,6 @@ export class Driver {
   @Column({ length: 17 })
   numberVehicleId: string;
 
-  // Verification and authentication properties
   @Column({ default: false })
   verified: boolean;
 
@@ -94,6 +93,12 @@ export class Driver {
 
   @OneToMany(() => Ride, (ride) => ride.driver)
   driverRides: Ride[];
+
+  @OneToOne(() => AppRating, (appRating) => appRating.user)
+  appRating: AppRating;
+
+  @Column({ type: 'enum', enum: ['small', 'medium', 'family'] })
+  sizeOfTheCar: string;
 
   @BeforeInsert()
   async beforeInsert() {

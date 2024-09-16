@@ -1,15 +1,27 @@
-import { IsNotEmpty, IsNumber, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, Max, Min } from 'class-validator';
 
 export class LocationDto {
   @IsNotEmpty()
   @IsNumber()
   @Min(-90)
   @Max(90)
-  latitude: number;
+  destinationLat: number;
 
   @IsNotEmpty()
   @IsNumber()
   @Min(-180)
   @Max(180)
-  longitude: number;
+  destinationLong: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  pickupLat: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  pickupLong: number;
 }

@@ -1,5 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UseGuards,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
+import { AppRatingDto } from 'src/DTOs/appRatingDto.dto';
+import { AppRating } from 'src/entites/AppRating';
 import { Driver } from 'src/entites/Driver';
 import { Transaction } from 'src/entites/Transactions';
 import { User } from 'src/entites/User';
@@ -11,6 +19,7 @@ export class HandlerFactoryService {
     @InjectRepository(Transaction) private Transaction: Repository<Transaction>,
     @InjectRepository(User) private User: Repository<User>,
     @InjectRepository(Driver) private Driver: Repository<Driver>,
+    @InjectRepository(AppRating) private AppRating: Repository<AppRating>,
   ) {}
 
   async addMoneyToWallet(amount: number, transactionId: number, userOrDriver) {
@@ -47,5 +56,32 @@ export class HandlerFactoryService {
       console.log(err);
       return { status: 'fail', message: err.message };
     }
+  }
+
+  async rateTheApp(userOrDriver, appRatingData: AppRatingDto) {
+    let appRating;
+    if (userOrDriver.isDriver) {
+      appRating = this.AppRating.create({
+        ...appRatingData,
+        driver: userOrDriver.id,
+      });
+      await this.AppRating.save(appRating);
+      userOrDriver.appRating = appRating.id;
+      await this.Driver.save(userOrDriver);
+    } else {
+      appRating = this.AppRating.create({
+        ...appRatingData,
+        user: userOrDriver.id,
+      });
+      await this.AppRating.save(appRating);
+      userOrDriver.appRating = appRating.id;
+      await this.User.save(userOrDriver);
+    }
+    console.log(userOrDriver);
+    return {
+      status: 'success',
+      message: 'Thanks for knowing us your opinion',
+      data: appRating,
+    };
   }
 }

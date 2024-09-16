@@ -14,6 +14,8 @@ import { VerficationCode } from 'src/entites/VerificationCode';
 import { Request, Response } from 'express';
 import { sendEmail } from 'utils/email';
 import { Refactoring } from 'utils/Refactoring';
+import * as fs from 'fs';
+import { getExactLanguageMessages } from 'utils/getExactLanguageMessages';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +23,7 @@ export class AuthService {
     @InjectRepository(User) private User: Repository<User>,
     // private schedulerRegistry: SchedulerRegistry,
     // private jwtService: JwtService,
-    private refactoring: Refactoring,
+    private Refactoring: Refactoring,
     @InjectRepository(Driver) private Driver: Repository<Driver>,
     @InjectRepository(VerficationCode)
     private VerficationCode: Repository<VerficationCode>,
@@ -35,7 +37,6 @@ export class AuthService {
   ) {
     try {
       const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
-
       const hashedOTP = await bcrypt.hash(otp, 10);
       let verificationCode;
 
@@ -55,11 +56,16 @@ export class AuthService {
         });
       }
       const link = `${req.protocol}://${req.get('host')}/api/v1/auth/verifyOTP`;
-      await this.VerficationCode.save(verificationCode),
-        await sendSms(
-          'whatsapp:+201021808868',
-          ` Your OTP code ${otp}. only valid for 10 minutes, Go to this link ${link} to verify your account `,
-        );
+      await this.VerficationCode.save(verificationCode);
+      const values = {
+        otp,
+        link,
+      };
+
+      const message = getExactLanguageMessages(
+        'send_verification_code',
+      ).replace(/{(\w+)}/g, (_, key) => values[key]);
+      await sendSms('whatsapp:+201021808868', message);
       return true;
     } catch (err) {
       console.log(err);
@@ -94,12 +100,12 @@ export class AuthService {
       if (verificationCode.userId) {
         await this.User.update({ id }, { verified: true });
         await this.VerficationCode.delete({ userId: { id } });
-        message = 'Account has been verified';
+        message = getExactLanguageMessages('verify_otp_users');
       }
       if (verificationCode.driverId) {
         await this.Driver.update({ id }, { verified: true });
         await this.VerficationCode.delete({ driverId: { id } });
-        message = 'Account has been verified, waiting for approval';
+        message = getExactLanguageMessages('verify_otp_drivers');
       }
       return { status: 'verified', message };
     } catch (err) {
@@ -133,7 +139,10 @@ export class AuthService {
         return { message: 'Error in sending verfication code' };
       }
     }
-    return { status: 'sucess', message: 'New OTP code has been sent' };
+    return {
+      status: 'sucess',
+      message: getExactLanguageMessages('create_new_otp'),
+    };
   }
   // Signup users, drivers
   async signupUsers(
@@ -148,7 +157,7 @@ export class AuthService {
       if (!newUser)
         throw new HttpException("Can't create user", HttpStatus.BAD_REQUEST);
 
-      const token = await this.refactoring.createSendToken(newUser.id, res);
+      const token = await this.Refactoring.createSendToken(newUser.id, res);
       const { password, ...userWithoutPassword } = newUser;
 
       if (!(await this.sendVerificationCode(newUser.id, this.User, req))) {
@@ -159,7 +168,7 @@ export class AuthService {
       return res.status(201).json({
         token,
         ...userWithoutPassword,
-        message: 'Verfication code sent to whatsapp',
+        message: getExactLanguageMessages('signup_users'),
       });
     } catch (err) {
       err.status = err.status ? err.status : 500;
@@ -181,7 +190,7 @@ export class AuthService {
       if (!newDriver)
         throw new HttpException("Can't create user", HttpStatus.BAD_REQUEST);
 
-      const token = await this.refactoring.createSendToken(newDriver.id, res);
+      const token = await this.Refactoring.createSendToken(newDriver.id, res);
       const { password, ...driverWithoutPassword } = newDriver;
 
       if (!(await this.sendVerificationCode(newDriver.id, this.Driver, req))) {
@@ -192,7 +201,7 @@ export class AuthService {
       // return { token, ...driverWithoutPassword };
       return res.status(201).json({
         status: 'sucess',
-        message: 'Application sent correctly verify the account',
+        message: getExactLanguageMessages('signup_drivers'),
         data: { token, ...driverWithoutPassword },
       });
     } catch (err) {
@@ -223,10 +232,11 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED,
         );
 
-      const token = await this.refactoring.createSendToken(user.id, res);
+      const token = await this.Refactoring.createSendToken(user.id, res);
       //createUpdateLocationCron(this.schedulerRegistry, user.id, this.User);
       res.status(200).json({
         status: 'success',
+        message: getExactLanguageMessages('login_users_drivers'),
         token,
       });
     } catch (err) {
@@ -259,11 +269,12 @@ export class AuthService {
           'You have to wait until your account accepted before you can use it',
           HttpStatus.UNAUTHORIZED,
         );
-      const token = await this.refactoring.createSendToken(driver.id, res);
+      const token = await this.Refactoring.createSendToken(driver.id, res);
 
       //createUpdateLocationCron(this.schedulerRegistry, .id, this.driver);
       return res.status(200).json({
         status: 'success',
+        message: getExactLanguageMessages('login_users_drivers'),
         token,
       });
     } catch (err) {
@@ -287,10 +298,16 @@ export class AuthService {
         HttpStatus.NOT_FOUND,
       );
     driver.accepted = true;
+
+    let message = getExactLanguageMessages('approve_driver').replace(
+      /{(\w+)}/g,
+      () => phone,
+    );
+
     await this.Driver.save(driver);
     return {
       status: 'success',
-      message: `Application with ${phone} approved`,
+      message: message,
     };
   }
   async requestChangeEmailOrPhone(
@@ -342,7 +359,7 @@ export class AuthService {
         });
       return {
         status: 'success',
-        message: 'security code verification sent to your email',
+        message: getExactLanguageMessages('request_change_email_or_phone'),
       };
     } catch (err) {
       console.log(err);
@@ -394,7 +411,7 @@ export class AuthService {
       }
       return {
         status: 'success',
-        message: 'Your profile has been updated successfully',
+        message: getExactLanguageMessages('changing_email_or_phone'),
       };
     } catch (err) {
       console.log(err);
@@ -403,8 +420,9 @@ export class AuthService {
   }
   async logout(res: Response) {
     res.clearCookie('jwt');
-    return res
-      .status(200)
-      .json({ status: 'sucess', message: 'logged out successfully' });
+    return res.status(200).json({
+      status: 'sucess',
+      message: getExactLanguageMessages('logout'),
+    });
   }
 }

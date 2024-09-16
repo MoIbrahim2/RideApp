@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import { getDistance } from 'geolib';
+import { Driver } from 'src/entites/Driver';
 
 const cookieOptions = {
   expires: new Date(
@@ -19,8 +21,50 @@ export class Refactoring {
 
     res.cookie('jwt', token, cookieOptions);
 
-    console.log('Response Headers:', res.getHeaders());
-
     return token;
+  }
+  searchingForNearbyDrivers(
+    drivers: Driver[],
+    latitude,
+    longitude,
+    searchZone?: number,
+  ) {
+    console.log(latitude, longitude, searchZone);
+    if (!searchZone) searchZone = parseInt(process.env.SEARCH_ZONE);
+
+    const nearbyDrivers = drivers
+      .map((driver) => ({
+        driverId: driver.id,
+        distance: getDistance(
+          {
+            latitude: latitude,
+            longitude: longitude,
+          },
+          {
+            latitude: driver.latitude,
+            longitude: driver.longitude,
+          },
+        ),
+      }))
+      .filter((driver) => driver.distance <= searchZone)
+      .sort((a, b) => a.distance - b.distance);
+    return nearbyDrivers;
+  }
+  async calcPrice(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const distance =
+      getDistance(
+        {
+          latitude: lat1,
+          longitude: lon1,
+        },
+        {
+          latitude: lat2,
+          longitude: lon2,
+        },
+      ) / 1000;
+    const baseFare = 10;
+    const pricePerKm = 10;
+    const overAllPrice = Math.ceil(baseFare + pricePerKm * distance);
+    return overAllPrice;
   }
 }

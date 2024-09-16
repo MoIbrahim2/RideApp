@@ -6,9 +6,15 @@ import { Driver } from 'src/entites/Driver';
 import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from 'src/entites/User';
+import { Ride } from 'src/entites/Ride';
+
+import { Notification } from 'src/entites/Notification';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Driver]), JwtModule],
+  imports: [
+    TypeOrmModule.forFeature([User, Driver, Ride, Notification]),
+    JwtModule,
+  ],
   controllers: [DriverController],
   providers: [DriverService, AuthGuard],
 })

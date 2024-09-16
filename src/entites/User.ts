@@ -1,6 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Ride } from './Ride';
 import { Acountries } from 'utils/countries_cities';
+import { AppRating } from './AppRating';
 
 @Entity({ name: 'users' })
 export class User {
@@ -40,11 +48,17 @@ export class User {
   @Column({ type: 'date', nullable: true })
   emailChangedAt: Date;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', default: 0 })
   wallet: number;
 
   @OneToMany(() => Ride, (ride) => ride.user)
   userRides: Ride[];
   @Column({ default: false })
   verified: boolean;
+
+  @OneToOne(() => AppRating, (appRating) => appRating.user)
+  appRating: AppRating;
+
+  @Column({ nullable: true })
+  userNotificationToken: string;
 }

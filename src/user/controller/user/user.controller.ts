@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Req,
@@ -13,6 +14,7 @@ import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
 import { RestrictTO } from 'src/auth/guards/restrict-to/restrict-to.guard';
 import { AddMoneyToWallet } from 'src/DTOs/addMoneyToWalletDto.dto';
+import { AppRatingDto } from 'src/DTOs/appRatingDto.dto';
 import { LocationDto } from 'src/DTOs/locationDto.dto';
 import { HandlerFactoryService } from 'src/handler-factory/handler-factory.service';
 import { UserService } from 'src/user/services/user/user.service';
@@ -24,7 +26,7 @@ export class UserController {
     private userService: UserService,
     private handlerFactoryService: HandlerFactoryService,
   ) {}
-  @UseGuards(AuthGuard)
+
   @Get()
   async findAll() {
     return this.userService.findAll();
@@ -33,9 +35,9 @@ export class UserController {
   @Patch('/setUserLocation')
   async setUserLocation(@Body() location: LocationDto, @Req() req: Request) {
     return this.userService.setUserLocation(
-      location.latitude,
-      location.longitude,
-      req['user'].id,
+      location.destinationLat,
+      location.destinationLong,
+      req['user'],
     );
   }
   @UseGuards(AuthGuard)
@@ -55,4 +57,16 @@ export class UserController {
       req['user'],
     );
   }
+
+  @UseGuards(AuthGuard)
+  @Post('appRating')
+  async appRating(@Req() req: Request, @Body() appRatingData: AppRatingDto) {
+    return this.handlerFactoryService.rateTheApp(req['user'], appRatingData);
+  }
+
+  // @UseGuards(AuthGuard, RestrictTO('user'))
+  // @Patch('assignNextNearestDriver/:rideId')
+  // async assignNextNearestDriver(@Param('rideId') rideId: string) {
+  //   return this.userService.assignNextNearestDriver(rideId);
+  // }
 }
