@@ -21,7 +21,6 @@ import { Refactoring } from 'utils/Refactoring';
       Ride,
       Transaction,
       AppRating,
-
       Notification,
     ]),
     JwtModule,

@@ -71,7 +71,4 @@ export class Ride {
 
   @Column('timestamp', { nullable: true })
   scheduledTo: Date;
-
-  @Column({ nullable: true })
-  userNotificationToken: string;
 }

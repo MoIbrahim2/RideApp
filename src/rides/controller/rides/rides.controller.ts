@@ -13,6 +13,7 @@ import {
 import { Request } from 'express';
 import { AuthGuard } from 'src/auth/guards/auth/auth.guard';
 import { RestrictTO } from 'src/auth/guards/restrict-to/restrict-to.guard';
+import { CancelationBodyDto } from 'src/DTOs/cancelationBodyDto.dto';
 import { ConfirmationTripDto } from 'src/DTOs/confirmationtTripDto.dto';
 import { RequestRideDto } from 'src/DTOs/requestRideDto.dto';
 
@@ -54,6 +55,20 @@ export class RidesController {
   async refuseRide(@Req() req: Request, @Param('rideId') rideId) {
     return this.rideService.rejectRide(rideId, req['user']);
   }
+  @UseGuards(AuthGuard, RestrictTO('driver'))
+  @Patch('cancelRide/:rideId')
+  async cancelRide(
+    @Req() req: Request,
+    @Param('rideId') rideId,
+    @Body() cancelationBody: CancelationBodyDto,
+  ) {
+    return this.rideService.captainCancelRide(
+      rideId,
+      req['user'],
+      cancelationBody.reasonOfCancelation,
+    );
+  }
+
   @UseGuards(AuthGuard, RestrictTO('user'))
   @Get('showAllAcceptedDrivers')
   async showAllAcceptedDrivers(@Body() rideRequestId: string) {

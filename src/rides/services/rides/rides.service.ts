@@ -12,6 +12,7 @@ import { RequestRideDto } from 'src/DTOs/requestRideDto.dto';
 import { Voucher } from 'src/entites/Vouchers';
 import { VoucherService } from 'src/voucher/service/voucher/voucher.service';
 import { formatDate } from 'utils/dateUtils';
+import { sendMessage } from 'utils/firebaseConfig';
 
 @Injectable()
 export class RidesService {
@@ -51,6 +52,13 @@ export class RidesService {
     });
 
     let searchZone: number;
+    // If the pickup is in the past
+    if (pickupDate && pickupDate < new Date(Date.now())) {
+      throw new HttpException(
+        'The pickupDate is in the past',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     // If the pickup is soon so no need to be scheduled for
     if (pickupDate && pickupDate < new Date(Date.now() + 30 * 60 * 1000)) {
@@ -77,7 +85,7 @@ export class RidesService {
       searchZone,
     );
 
-    const price = await this.Refactoring.calcPrice(
+    const price = await this.Refactoring.calcEstimatedPrice(
       pickupLat,
       pickupLong,
       destinationLat,
@@ -174,6 +182,7 @@ export class RidesService {
 
           if (voucher) {
             voucher.usageCount++;
+            await manager.save(voucher);
           }
 
           if (ride.paymentMethod === 'wallet') {
@@ -186,7 +195,6 @@ export class RidesService {
             ride.user.wallet -= actualPrice;
           }
           await manager.save(ride.user);
-          await manager.save(voucher);
           await manager.save(ride);
           const message = `The client confirmed the trip `;
           await manager.save(
@@ -260,20 +268,26 @@ export class RidesService {
     await this.Ride.save(ride);
 
     const message = `Captain accept the ride and offered to you his price, accept or reject back`;
-    await this.Notification.save(
+    const notification = await this.Notification.save(
       this.Notification.create({
         user: { id: ride.user.id },
         message,
         data: {
-          from: driver.name,
+          driverName: driver.name,
           carBrand: driver.carBrand,
           carEdition: driver.carEdition,
-          distance: driverInfo.distance,
-          driverId: driver.id,
-          captainPrice: price,
+          distance: driverInfo.distance.toString(),
+          driverId: driver.id.toString(),
+          captainPrice: price.toString(),
         },
       }),
     );
+
+    await sendMessage(ride.user.userNotificationToken, {
+      title: `Ride accepted by ${driver.name}`,
+      body: message,
+      data: { ...notification.data, message },
+    });
     return {
       status: 'success',
       message: `The driver ${driver.name} has accepted the ride`,
@@ -347,6 +361,70 @@ export class RidesService {
     ride.active = false;
     await this.Ride.save(ride);
     return { status: 'success', message: 'The ride ended successfully' };
+  }
+  async captainCancelRide(
+    rideRequestId: string,
+    driver: Driver,
+    reason: string,
+  ) {
+    const ride = await this.Ride.findOne({
+      where: { id: rideRequestId },
+      relations: ['driver', 'candidatesDrivers', 'user'],
+    });
+    if (!ride) {
+      throw new HttpException(
+        'There is no availabe rides for that id',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const acceptedDriver = ride.candidatesDrivers.find(
+      (d) => d.id === driver.id,
+    );
+    if (!acceptedDriver)
+      throw new HttpException(
+        'This driver is not one of the accepted drivers ',
+        HttpStatus.UNAUTHORIZED,
+      );
+
+    // If the ride has been accepted by the client before
+    if (ride.driver && ride.driver.id === driver.id && ride.rideAccepted) {
+      ride.driver = null;
+      ride.rideAccepted = false;
+    }
+
+    ride.candidatesDrivers = ride.candidatesDrivers.filter(
+      (d) => d.id !== driver.id,
+    );
+
+    await this.Ride.save(ride);
+
+    const message = `Captain ${driver.name} cancel the ride`;
+    await this.Notification.save(
+      await this.Notification.create({
+        user: { id: ride.user.id },
+        message,
+        data: {
+          driverName: driver.name,
+          reasonOfCancelation: reason,
+          driverPhone: driver.phone,
+        },
+      }),
+    );
+    await sendMessage(ride.user.userNotificationToken, {
+      title: `Captain cancel the trip`,
+      body: message,
+      data: {
+        driverName: driver.name,
+        reasonOfCancelation: reason,
+        driverPhone: driver.phone,
+      },
+    });
+
+    return {
+      status: 'rejected',
+      message: 'Ride has been cancelled successfully',
+    };
   }
   async showAllAcceptedDrivers(rideRequestId: string) {
     const ride = await this.Ride.findOne({

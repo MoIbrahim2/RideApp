@@ -4,6 +4,7 @@ import { NearbyDriver } from 'src/DTOs/nearbyDriver';
 import { Repository } from 'typeorm';
 import { Notification } from 'src/entites/Notification';
 import { formatDate } from 'utils/dateUtils';
+import { sendMessage } from './firebaseConfig';
 export const sendNotficationToAllNearestDrivers = async (
   user: User,
   pickupLat: number,
@@ -35,6 +36,17 @@ export const sendNotficationToAllNearestDrivers = async (
         expectedPrice,
         priceMessage: `notice your maximum price offer will be ${maxAllowedPrice}, and the minimum one is ${minAllowedPrice}`,
         scheduleMessage,
+      },
+    });
+    await sendMessage(nearestDriver.driverNotificationToken, {
+      title: `New ride request `,
+      body: `request ride from ${user.name}`,
+      data: {
+        address,
+        distance: nearestDriver.distance.toString(),
+        rideRequestId,
+        expectedPrice: expectedPrice.toString(),
+        priceMessage: `notice your maximum price offer will be ${maxAllowedPrice}, and the minimum one is ${minAllowedPrice}`,
       },
     });
     await Notification.save(driverNotification);

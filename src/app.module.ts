@@ -25,6 +25,10 @@ import { ChoosenLanguageMiddleware } from './middlewares/choosen-language/choose
 import { Refactoring } from 'utils/Refactoring';
 import { VoucherModule } from './voucher/voucher.module';
 import { Voucher } from './entites/Vouchers';
+import { ReviewService } from './review/services/review.service';
+import { ReviewModule } from './review/review.module';
+import { Review } from './entites/Reviews';
+import { ReviewSubscriber } from './review/subscribers/review.subscriber';
 
 @Module({
   imports: [
@@ -41,7 +45,7 @@ import { Voucher } from './entites/Vouchers';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      subscribers: [UserSubscriber],
+      subscribers: [UserSubscriber, ReviewSubscriber],
       synchronize: process.env.SYNC === 'true',
       logging: true,
       entities: [
@@ -54,6 +58,7 @@ import { Voucher } from './entites/Vouchers';
         Notification,
         AppRating,
         Voucher,
+        Review,
       ],
       // autoLoadEntities: true,
     }),
@@ -61,7 +66,7 @@ import { Voucher } from './entites/Vouchers';
     RidesModule,
     AuthModule,
     DriversModule,
-
+    ReviewModule,
     TypeOrmModule.forFeature([Transaction, User, Driver, AppRating]),
     FaqModule,
     NotificationModule,

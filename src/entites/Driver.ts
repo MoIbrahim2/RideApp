@@ -100,6 +100,15 @@ export class Driver {
   @Column({ type: 'enum', enum: ['small', 'medium', 'family'] })
   sizeOfTheCar: string;
 
+  @Column({ nullable: true })
+  userNotificationToken: string;
+
+  @Column({ default: 3 })
+  avgRating: number;
+
+  @Column({ default: 0 })
+  nRatings: number;
+
   @BeforeInsert()
   async beforeInsert() {
     if (this.password) this.password = await bcrypt.hash(this.password, 12);

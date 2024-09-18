@@ -35,6 +35,7 @@ export class Refactoring {
     const nearbyDrivers = drivers
       .map((driver) => ({
         driverId: driver.id,
+        driverNotificationToken: driver.userNotificationToken,
         distance: getDistance(
           {
             latitude: latitude,
@@ -50,7 +51,12 @@ export class Refactoring {
       .sort((a, b) => a.distance - b.distance);
     return nearbyDrivers;
   }
-  async calcPrice(lat1: number, lon1: number, lat2: number, lon2: number) {
+  async calcEstimatedPrice(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ) {
     const distance =
       getDistance(
         {
