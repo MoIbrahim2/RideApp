@@ -13,7 +13,7 @@ export class Review {
   @ManyToOne(() => Driver)
   refCaptain: Driver;
 
-  @Column()
+  @Column('float')
   rating: number;
 
   @Column('text', { nullable: true })

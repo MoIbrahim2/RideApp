@@ -100,10 +100,10 @@ export class Driver {
   @Column({ type: 'enum', enum: ['small', 'medium', 'family'] })
   sizeOfTheCar: string;
 
-  @Column({ nullable: true })
+  @Column({ default: undefined })
   userNotificationToken: string;
 
-  @Column({ default: 3 })
+  @Column({ type: 'float', default: 3 })
   avgRating: number;
 
   @Column({ default: 0 })
