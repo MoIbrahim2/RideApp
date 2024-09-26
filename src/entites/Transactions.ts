@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -7,27 +8,33 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { Driver } from './Driver';
-import { Injectable } from '@nestjs/common';
+import { Ride } from './Ride';
 
 @Entity({ name: 'transactions' })
 export class Transaction {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   transactionId: number;
 
   @Column()
   amount: number;
 
-  @Column({ type: 'date' })
+  @CreateDateColumn()
   date: Date;
 
+  @Column({ type: 'enum', enum: ['deposit', 'payment'] })
+  type: 'deposit' | 'payment';
   @ManyToOne(() => Driver, { eager: true })
-  @JoinColumn({ name: 'driverId' }) // Specify the correct column name
+  @JoinColumn({ name: 'driverId' })
   driver: Driver;
 
   @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'userId' }) // Specify the correct column name
+  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @ManyToOne(() => Ride, { nullable: true, eager: true })
+  @JoinColumn({ name: 'rideId' })
+  ride?: Ride;
 }

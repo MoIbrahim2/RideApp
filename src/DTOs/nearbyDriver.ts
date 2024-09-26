@@ -1,5 +1,5 @@
 export class NearbyDriver {
-  driverId: number;
+  driverId: string;
   distance: number;
   driverNotificationToken: string;
 }

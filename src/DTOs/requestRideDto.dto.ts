@@ -15,4 +15,7 @@ export class RequestRideDto extends LocationDto {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   pickupDate: Date;
+
+  @IsOptional()
+  discountVoucher: string;
 }

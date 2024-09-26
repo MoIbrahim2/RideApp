@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateVoucherDto } from 'src/DTOs/createVoucherDto.dto';
 import { User } from 'src/entites/User';
 import { Voucher } from 'src/entites/Vouchers';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class VoucherService {
@@ -26,5 +26,16 @@ export class VoucherService {
     }
 
     return voucher;
+  }
+  async applyVoucher(voucher: Voucher, price: number, manager?: EntityManager) {
+    const actualPrice = price - price * voucher.voucherDiscount;
+    voucher.usageCount++;
+
+    if (manager) {
+      await manager.save(voucher);
+    } else {
+      await this.Voucher.save(voucher);
+    }
+    return actualPrice;
   }
 }

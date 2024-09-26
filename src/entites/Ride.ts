@@ -12,6 +12,7 @@ import { User } from './User';
 import { Driver } from './Driver';
 import { LocationDto } from 'src/DTOs/locationDto.dto';
 import { NearbyDriver } from 'src/DTOs/nearbyDriver';
+import { Voucher } from './Vouchers';
 
 @Entity({ name: 'rides' })
 export class Ride {
@@ -21,7 +22,7 @@ export class Ride {
   @Column({ nullable: true })
   expectedPrice: number;
 
-  @Column({ default: false })
+  @Column({ default: true })
   active: boolean;
 
   @Column('json')
@@ -64,11 +65,14 @@ export class Ride {
   candidatesDrivers: Driver[];
 
   @Column('json', { nullable: true })
-  priceOffers: { driverId: number; price: number }[];
+  priceOffers: { driverId: string; price: number }[];
 
   @Column({ type: 'enum', enum: ['wallet', 'cash'] })
   paymentMethod: string;
 
   @Column('timestamp', { nullable: true })
   scheduledTo: Date;
+
+  @ManyToOne(() => Voucher)
+  discountVoucher: Voucher;
 }

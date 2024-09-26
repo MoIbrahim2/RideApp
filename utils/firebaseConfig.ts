@@ -1,30 +1,29 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, App } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 
-const serviceAccount = require('/Users/mohamedibrahim/figma-project/figma-project-32be2-firebase-adminsdk-3aa5t-2154844a4b.json');
-
+const serviceAccount = require('/Users/mohamedibrahim/figma-project/figma-project-32be2-firebase-adminsdk-6wc7a-35c0a7144b.json');
 // Initialize the Firebase app with the service account credentials
-const app = initializeApp({
-  credential: cert(serviceAccount),
-});
+// const app = initializeApp({
+//   credential: cert(serviceAccount),
+// });
 
 // Function to send a message
 export const sendMessage = async (
   token: string,
   notification: { title: string; body: string; data: any },
 ) => {
-  const messaging = getMessaging(app);
-  const payload = {
-    notification: {
-      title: notification.title,
-      body: notification.body,
-    },
-    data: notification.data,
-    token: token,
-  };
+  // const messaging = getMessaging(app);
+  // const payload = {
+  //   notification: {
+  //     title: notification.title,
+  //     body: notification.body,
+  //   },
+  //   data: notification.data,
+  //   token: token,
+  // };
 
   try {
-    await messaging.send(payload);
+    // await messaging.send(payload);
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;

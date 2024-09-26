@@ -17,9 +17,15 @@ export const RestrictTO = (...allowedEntities: string[]) => {
     ): boolean | Promise<boolean> | Observable<boolean> {
       const req = context.switchToHttp().getRequest() as Request;
       const doc = req['user'];
-      const entityType = doc.isDriver ? 'driver' : 'user';
+      let entityType = doc.isDriver ? 'driver' : 'user';
+
+      if (entityType === 'user') {
+        entityType = req['user'].role === 'admin' ? 'admin' : 'user';
+      }
+
       // Check if the entity type is allowed
-      const isAllowed = allowedEntities.some((entity) => entity === entityType);
+      // const isAllowed = allowedEntities.some((entity) => entity === entityType);
+      const isAllowed = allowedEntities.includes(entityType);
 
       if (!isAllowed) {
         throw new HttpException(

@@ -17,7 +17,7 @@ export class ReviewService {
   ) {}
 
   @OnEvent('review.created')
-  async calcAverageRatings(driverId: number) {
+  async calcAverageRatings(driverId: string) {
     const stats = await this.Review.createQueryBuilder('review')
       .where('review.refCaptain = :driverId', { driverId })
       .select('COUNT(review.id)', 'nRatings')
@@ -33,7 +33,7 @@ export class ReviewService {
     );
   }
 
-  async createReview(user: User, driverId: number, reviewData: AppRatingDto) {
+  async createReview(user: User, driverId: string, reviewData: AppRatingDto) {
     const driver = await this.Driver.findOneBy({ id: driverId });
     if (!driver)
       throw new HttpException(

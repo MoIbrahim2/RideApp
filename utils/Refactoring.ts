@@ -16,8 +16,8 @@ const cookieOptions = {
 export class Refactoring {
   constructor(private jwtService: JwtService) {}
 
-  async createSendToken(userId: number, res: Response) {
-    const token = await this.jwtService.signAsync({ userId });
+  async createSendToken(userId: string, isUser: boolean, res: Response) {
+    const token = await this.jwtService.signAsync({ userId, isUser });
 
     res.cookie('jwt', token, cookieOptions);
 
@@ -49,6 +49,7 @@ export class Refactoring {
       }))
       .filter((driver) => driver.distance <= searchZone)
       .sort((a, b) => a.distance - b.distance);
+
     return nearbyDrivers;
   }
   async calcEstimatedPrice(

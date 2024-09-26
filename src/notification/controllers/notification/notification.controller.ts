@@ -23,4 +23,12 @@ export class NotificationController {
       notificationData,
     );
   }
+  // @UseGuards(AuthGuard)
+  // @Post('testNotfication')
+  // async testNotification(@Req() req: Request) {
+  // return await this.notificationService.sendMessage(
+  //     req['user'].userNotificationToken,
+  //     { title: 'test', body: 'test', data: { test: 'test' } },
+  //   );
+  // }
 }

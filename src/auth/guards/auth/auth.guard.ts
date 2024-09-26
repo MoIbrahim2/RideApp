@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
         HttpStatus.UNAUTHORIZED,
       );
 
-    let decoded;
+    let decoded: { userId; isUser: boolean };
     try {
       decoded = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
@@ -45,9 +45,13 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('unauthorized JWT token');
     }
     let userOrDriver;
-    userOrDriver = await this.User.findOneBy({ id: decoded.userId });
-    if (!userOrDriver)
+    //check if it user or driver
+    if (decoded.isUser) {
+      userOrDriver = await this.User.findOneBy({ id: decoded.userId });
+    } else {
       userOrDriver = await this.Driver.findOneBy({ id: decoded.userId });
+    }
+
     if (!userOrDriver) {
       throw new HttpException(
         'The user or driver belonging to this token no longer exists. Please login again',
@@ -60,14 +64,12 @@ export class AuthGuard implements CanActivate {
         HttpStatus.UNAUTHORIZED,
       );
     }
-
     if (userOrDriver.isDriver && !userOrDriver.accepted) {
       throw new HttpException(
         'You are not accepted yet, please wait until the admin accept the account first ',
         HttpStatus.UNAUTHORIZED,
       );
     }
-
     req['user'] = userOrDriver;
     return true;
   }

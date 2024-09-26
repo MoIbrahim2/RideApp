@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsPhoneNumber,
   MaxLength,
   MinLength,
@@ -49,4 +50,7 @@ export class CreateUserDto {
   @Transform(({ value }) => new Date(value))
   @IsDate({ message: 'Wrong date entered' })
   birthday: Date;
+
+  @IsOptional()
+  userNotificationToken: string;
 }

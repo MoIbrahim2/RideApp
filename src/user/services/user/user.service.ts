@@ -1,13 +1,12 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Driver } from 'src/entites/Driver';
 
 import { Notification } from 'src/entites/Notification';
 import { Ride } from 'src/entites/Ride';
-import { v4 as uuidv4 } from 'uuid';
 import { User } from 'src/entites/User';
 import { Repository } from 'typeorm';
-import { sendNotficationToAllNearestDrivers } from 'utils/sendNotificationToDriver';
+
 import { Refactoring } from 'utils/Refactoring';
 
 @Injectable()
@@ -21,12 +20,6 @@ export class UserService {
     @InjectRepository(Notification)
     private Notification: Repository<Notification>,
   ) {}
-  async findAll() {
-    const users = await this.User.find({
-      relations: ['userRides'],
-    });
-    return { users };
-  }
   async setUserLocation(lat: number, long: number, user) {
     user.latitude = lat;
     user.longitude = long;

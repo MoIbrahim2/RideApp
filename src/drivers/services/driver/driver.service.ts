@@ -6,9 +6,6 @@ import { Repository } from 'typeorm';
 
 import { Ride } from 'src/entites/Ride';
 import { Notification } from 'src/entites/Notification';
-import { getAddressFromCoordinates } from 'utils/getLocation';
-import { sendNotficationToAllNearestDrivers } from 'utils/sendNotificationToDriver';
-import { getDistance } from 'geolib';
 
 @Injectable()
 export class DriverService {

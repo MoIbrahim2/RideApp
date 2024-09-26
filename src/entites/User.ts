@@ -13,7 +13,7 @@ import { AppRating } from './AppRating';
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column()
   name: string;
@@ -61,4 +61,7 @@ export class User {
 
   @Column({ nullable: true })
   userNotificationToken: string;
+
+  @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
+  role: string;
 }

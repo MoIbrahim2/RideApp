@@ -22,7 +22,7 @@ export class ReviewController {
   @UseGuards(AuthGuard)
   @Post('createReview/:driverId')
   async createReview(
-    @Param('driverId') driverId: number,
+    @Param('driverId') driverId: string,
     @Body() reviewData: AppRatingDto,
     @Req() req: Request,
   ) {

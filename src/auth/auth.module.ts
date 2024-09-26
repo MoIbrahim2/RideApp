@@ -10,9 +10,11 @@ import { Driver } from 'src/entites/Driver';
 import { ScheduleModule } from '@nestjs/schedule';
 import { VerficationCode } from 'src/entites/VerificationCode';
 import { Refactoring } from 'utils/Refactoring';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forFeature([User, Driver, Ride, VerficationCode]),
     JwtModule.register({
       secret: process.env.JWT_SECRET,

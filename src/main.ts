@@ -5,7 +5,6 @@ dotenv.config({
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ChoosenLanguageMiddleware } from './middlewares/choosen-language/choosen-language.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

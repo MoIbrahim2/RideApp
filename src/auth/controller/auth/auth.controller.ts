@@ -82,10 +82,7 @@ export class AuthController {
     const Model = req['user'].isDriver ? this.Driver : this.User;
     return this.authService.createNewOTP(req['user'], Model, req);
   }
-  @Patch('/approveDriver')
-  async approveDriver(@Body() approveDriverData: ApproveDriverDto) {
-    return this.authService.approveDriver(approveDriverData.phone);
-  }
+
   @UseGuards(AuthGuard)
   @Get('/requestUpdateEmailOrPhone')
   async requestUpdateEmailOrPhone(@Req() req: Request) {

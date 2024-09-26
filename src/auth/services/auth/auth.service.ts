@@ -16,6 +16,7 @@ import { sendEmail } from 'utils/email';
 import { Refactoring } from 'utils/Refactoring';
 import * as fs from 'fs';
 import { getExactLanguageMessages } from 'utils/getExactLanguageMessages';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +28,12 @@ export class AuthService {
     @InjectRepository(Driver) private Driver: Repository<Driver>,
     @InjectRepository(VerficationCode)
     private VerficationCode: Repository<VerficationCode>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   //craete, validte, resend OTP
   async sendVerificationCode(
-    userId: number,
+    userId: string,
     Model: Repository<User | Driver>,
     req: Request,
   ) {
@@ -73,7 +75,7 @@ export class AuthService {
     }
   }
 
-  async verifyOTP(id: number, otp: string) {
+  async verifyOTP(id: string, otp: string) {
     try {
       const verificationCode = await this.VerficationCode.findOne({
         where: [
@@ -157,7 +159,11 @@ export class AuthService {
       if (!newUser)
         throw new HttpException("Can't create user", HttpStatus.BAD_REQUEST);
 
-      const token = await this.Refactoring.createSendToken(newUser.id, res);
+      const token = await this.Refactoring.createSendToken(
+        newUser.id,
+        true,
+        res,
+      );
       const { password, ...userWithoutPassword } = newUser;
 
       if (!(await this.sendVerificationCode(newUser.id, this.User, req))) {
@@ -190,13 +196,19 @@ export class AuthService {
       if (!newDriver)
         throw new HttpException("Can't create user", HttpStatus.BAD_REQUEST);
 
-      const token = await this.Refactoring.createSendToken(newDriver.id, res);
+      const token = await this.Refactoring.createSendToken(
+        newDriver.id,
+        false,
+        res,
+      );
       const { password, ...driverWithoutPassword } = newDriver;
 
       if (!(await this.sendVerificationCode(newDriver.id, this.Driver, req))) {
         await this.Driver.delete({ id: newDriver.id });
         return { message: 'Error in sending verfication code' };
       }
+
+      this.eventEmitter.emit('captainSignUp', newDriver.id);
 
       // return { token, ...driverWithoutPassword };
       return res.status(201).json({
@@ -232,8 +244,8 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED,
         );
 
-      const token = await this.Refactoring.createSendToken(user.id, res);
-      //createUpdateLocationCron(this.schedulerRegistry, user.id, this.User);
+      const token = await this.Refactoring.createSendToken(user.id, true, res);
+
       res.status(200).json({
         status: 'success',
         message: getExactLanguageMessages('login_users_drivers'),
@@ -269,7 +281,11 @@ export class AuthService {
           'You have to wait until your account accepted before you can use it',
           HttpStatus.UNAUTHORIZED,
         );
-      const token = await this.Refactoring.createSendToken(driver.id, res);
+      const token = await this.Refactoring.createSendToken(
+        driver.id,
+        false,
+        res,
+      );
 
       //createUpdateLocationCron(this.schedulerRegistry, .id, this.driver);
       return res.status(200).json({
@@ -285,31 +301,7 @@ export class AuthService {
       });
     }
   }
-  async approveDriver(phone: string) {
-    const driver = await this.Driver.findOneBy({ phone });
-    if (!driver.verified)
-      throw new HttpException(
-        'Please verify the account first ',
-        HttpStatus.UNAUTHORIZED,
-      );
-    if (!driver || driver.accepted === true)
-      throw new HttpException(
-        'There is no Driver with that phone, or driver is already accepted',
-        HttpStatus.NOT_FOUND,
-      );
-    driver.accepted = true;
 
-    let message = getExactLanguageMessages('approve_driver').replace(
-      /{(\w+)}/g,
-      () => phone,
-    );
-
-    await this.Driver.save(driver);
-    return {
-      status: 'success',
-      message: message,
-    };
-  }
   async requestChangeEmailOrPhone(
     document: User | Driver,
     Model: Repository<User | Driver>,
@@ -366,7 +358,7 @@ export class AuthService {
       return { err };
     }
   }
-  async changingEmailOrPhone(id: number, otp: string, data) {
+  async changingEmailOrPhone(id: string, otp: string, data) {
     try {
       if (!data) {
         throw new HttpException(

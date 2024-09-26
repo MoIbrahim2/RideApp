@@ -27,10 +27,6 @@ export class UserController {
     private handlerFactoryService: HandlerFactoryService,
   ) {}
 
-  @Get()
-  async findAll() {
-    return this.userService.findAll();
-  }
   @UseGuards(AuthGuard, RestrictTO('user'))
   @Patch('/setUserLocation')
   async setUserLocation(@Body() location: LocationDto, @Req() req: Request) {

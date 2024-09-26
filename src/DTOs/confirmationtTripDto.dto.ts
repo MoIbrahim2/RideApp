@@ -1,14 +1,17 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class ConfirmationTripDto {
   @IsNotEmpty()
   @IsBoolean()
   accept: boolean;
 
-  @IsOptional()
-  discountVoucher: string;
-
   @IsNotEmpty()
-  @IsNumber()
-  driverId: number;
+  @IsString()
+  driverId: string;
 }

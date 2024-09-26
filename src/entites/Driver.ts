@@ -15,8 +15,8 @@ import { AppRating } from './AppRating';
 
 @Entity({ name: 'drivers' })
 export class Driver {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   @Column({ default: true })
   isDriver: boolean;
   @Column()
