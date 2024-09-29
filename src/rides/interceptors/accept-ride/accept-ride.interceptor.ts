@@ -21,7 +21,6 @@ export class AcceptRideInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest();
     const { rideRequestId, driver, price } = req.body;
 
-    console.log('dsaijafjdsijhdsafihj');
     const ride = await this.Ride.findOne({
       where: { id: rideRequestId, active: true },
       relations: ['candidatesDrivers', 'user'],

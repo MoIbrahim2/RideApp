@@ -10,9 +10,11 @@ import { Driver } from 'src/entites/Driver';
 import { Notification } from 'src/entites/Notification';
 import { Ride } from 'src/entites/Ride';
 import { User } from 'src/entites/User';
+import { FirebaseNotificationService } from 'src/notification/services/firebase-notification/firebase-notification.service';
+import { NotificationService } from 'src/notification/services/notification/notification.service';
 import { DataSource, getConnection, Repository } from 'typeorm';
 import { ApiFeatures } from 'utils/apiFeatures';
-import { sendMessage } from 'utils/firebaseConfig';
+
 import { getExactLanguageMessages } from 'utils/getExactLanguageMessages';
 
 @Injectable()
@@ -25,6 +27,8 @@ export class AdminService implements OnModuleInit {
     @InjectRepository(Notification)
     private Notification: Repository<Notification>,
     private readonly dataSource: DataSource,
+    private notificationService: NotificationService,
+    private firebaseNotification: FirebaseNotificationService,
   ) {}
 
   async onModuleInit() {
@@ -101,13 +105,16 @@ export class AdminService implements OnModuleInit {
         data: { captainId },
       }),
     );
-    await sendMessage(this.admin.userNotificationToken, {
-      title: 'new captain application',
-      body: 'new captain application please accept or reject it',
-      data: {
-        captainId: captainId.toString(),
+    await this.firebaseNotification.sendMessage(
+      this.admin.userNotificationToken,
+      {
+        title: 'new captain application',
+        body: 'new captain application please accept or reject it',
+        data: {
+          captainId: captainId.toString(),
+        },
       },
-    });
+    );
   }
   async clearDatabase() {
     const queryRunner = this.dataSource.createQueryRunner();

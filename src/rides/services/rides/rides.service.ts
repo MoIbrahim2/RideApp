@@ -17,7 +17,6 @@ import { RequestRideDto } from 'src/DTOs/requestRideDto.dto';
 import { Voucher } from 'src/entites/Vouchers';
 import { VoucherService } from 'src/voucher/service/voucher/voucher.service';
 import { formatDate } from 'utils/dateUtils';
-import { sendMessage } from 'utils/firebaseConfig';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentsService } from 'src/payments/services/payments/payments.service';
 import { NotificationService } from 'src/notification/services/notification/notification.service';
@@ -237,6 +236,9 @@ export class RidesService implements OnModuleInit {
 
   // Driver endpoints
   async acceptRide(ride: Ride, driverInfo, driver: Driver, price: number) {
+    // Used interceptor to check if the ride exist, if the driver authorised to accept the ride, if the price is lying within the allowed range
+
+    //just to make sure that the priceOffers array set to value (empty array) so i could use it
     if (!ride.priceOffers) ride.priceOffers = [];
     ride.priceOffers.push({ driverId: driver.id, price });
 
@@ -341,64 +343,26 @@ export class RidesService implements OnModuleInit {
     await this.Ride.save(ride);
     return { status: 'success', message: 'The ride ended successfully' };
   }
-  async captainCancelRide(
-    rideRequestId: string,
-    driver: Driver,
-    reason: string,
-  ) {
-    const ride = await this.Ride.findOne({
-      where: { id: rideRequestId, active: true },
-      relations: ['driver', 'candidatesDrivers', 'user'],
-    });
-    if (!ride) {
-      throw new HttpException(
-        'There is no availabe rides for that id',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+  async captainCancelRide(ride: Ride, driver: Driver, reason: string) {
+    // Used interceptor to check of the existance of the ride and if the captain is allowed to cancel the ride or not
 
-    const acceptedDriver = ride.candidatesDrivers.find(
-      (d) => d.id === driver.id,
-    );
-    if (!acceptedDriver)
-      throw new HttpException(
-        'This driver is not one of the accepted drivers ',
-        HttpStatus.UNAUTHORIZED,
-      );
-
-    // If the ride has been accepted by the client before(the captain assigned to the ride)
+    // If the ride has been accepted by the client before (which means the captain assigned to the ride)
     if (ride.driver && ride.driver.id === driver.id && ride.rideAccepted) {
       ride.driver = null;
       ride.rideAccepted = false;
     }
 
+    // Delete the driver from the candidates of the ride
     ride.candidatesDrivers = ride.candidatesDrivers.filter(
       (d) => d.id !== driver.id,
     );
 
     await this.Ride.save(ride);
-
-    const message = `Captain ${driver.name} cancel the ride`;
-    await this.Notification.save(
-      await this.Notification.create({
-        user: { id: ride.user.id },
-        message,
-        data: {
-          driverName: driver.name,
-          reasonOfCancelation: reason,
-          driverPhone: driver.phone,
-        },
-      }),
+    await this.notificationService.captainCacncelRideNotifications(
+      ride,
+      driver,
+      reason,
     );
-    await sendMessage(ride.user.userNotificationToken, {
-      title: `Captain cancel the trip`,
-      body: message,
-      data: {
-        driverName: driver.name,
-        reasonOfCancelation: reason,
-        driverPhone: driver.phone,
-      },
-    });
 
     return {
       status: 'rejected',
@@ -421,26 +385,12 @@ export class RidesService implements OnModuleInit {
     ride.active = false;
     await this.Ride.save(ride);
 
-    if (ride.driver) {
-      const message = 'The ride cancelled by the client';
-      await this.Notification.save(
-        this.Notification.create({
-          driver: { id: ride.driver.id },
-          message,
-          data: { reason },
-        }),
-      );
-      await sendMessage(ride.driver.userNotificationToken, {
-        title: 'Ride cancelation',
-        body: `Ride from ${ride.user.name} canceled `,
-        data: { cancelationReason: reason, userPhone: ride.user.phone },
-      });
-    }
-    await sendMessage(this.admin.userNotificationToken, {
-      title: 'Ride cancelation',
-      body: `Ride from ${ride.user.name} canceled `,
-      data: { cancelationReason: reason, userPhone: ride.user.phone },
-    });
+    await this.notificationService.clientCancelRideNotificaions(
+      ride,
+      this.admin,
+      reason,
+    );
+
     return {
       status: 'canceled',
       message: 'The trip cancelled successfully',

@@ -15,6 +15,7 @@ export class FirebaseNotificationService {
   private initializeFirebaseApp(): App {
     try {
       const serviceAccount = require(process.env.FIREBASE_CREDENTIALS_FILE);
+
       return initializeApp({
         credential: cert(serviceAccount),
       });
@@ -42,6 +43,21 @@ export class FirebaseNotificationService {
     captainAcceptRide: (driverName, data: {}) => ({
       title: `Ride accepted by ${driverName}`,
       body: `Captain accept the ride and offered to you his price, accept or reject back`,
+      data: { ...data },
+    }),
+    clientCancelRideCaptain: (userName, data: {}) => ({
+      title: 'Ride cancelation',
+      body: `Ride from ${userName} canceled `,
+      data: { ...data },
+    }),
+    clientCancelRideAdmin: (rideId, userName, data: {}) => ({
+      title: 'Ride cancelation',
+      body: `Ride ${rideId} from ${userName} has been canceled `,
+      data: { ...data },
+    }),
+    captainCancelRide: (message: string, data: {}) => ({
+      title: `Captain cancel the trip`,
+      body: message,
       data: { ...data },
     }),
   };

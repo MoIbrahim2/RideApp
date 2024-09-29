@@ -10,6 +10,7 @@ import { NearbyDriver } from 'src/DTOs/nearbyDriver';
 import { getAddressFromCoordinates } from 'utils/getLocation';
 import { formatDate } from 'utils/dateUtils';
 import { Driver } from 'src/entites/Driver';
+import { Ride } from 'src/entites/Ride';
 
 @Injectable()
 export class NotificationService {
@@ -182,6 +183,7 @@ export class NotificationService {
           scheduleMessage,
         },
       });
+      console.log(nearestDriver.driverNotificationToken);
       await this.firebaseNotificationService.sendMessage(
         nearestDriver.driverNotificationToken,
         FirebaseNotificationService.templates.newRideRequest(user.name, {
@@ -206,6 +208,59 @@ export class NotificationService {
         sendedTo: nearestDrivers.toString(),
         rideRequestId,
         expectedPrice: expectedPrice.toString(),
+      }),
+    );
+  }
+  async clientCancelRideNotificaions(ride: Ride, admin: User, reason: string) {
+    if (ride.driver) {
+      const message = 'The ride cancelled by the client';
+      await this.Notification.save(
+        this.Notification.create({
+          driver: { id: ride.driver.id },
+          message,
+          data: { reason },
+        }),
+      );
+      await this.firebaseNotificationService.sendMessage(
+        ride.driver.userNotificationToken,
+        FirebaseNotificationService.templates.clientCancelRideCaptain(
+          ride.user.name,
+          { cancelationReason: reason, userPhone: ride.user.phone },
+        ),
+      );
+    }
+    await this.firebaseNotificationService.sendMessage(
+      admin.userNotificationToken,
+      FirebaseNotificationService.templates.clientCancelRideAdmin(
+        ride.id,
+        ride.user.name,
+        { cancelationReason: reason, userPhone: ride.user.phone },
+      ),
+    );
+  }
+  async captainCacncelRideNotifications(
+    ride: Ride,
+    driver: Driver,
+    reason: string,
+  ) {
+    const message = `Captain ${driver.name} cancel the ride`;
+    await this.Notification.save(
+      await this.Notification.create({
+        user: { id: ride.user.id },
+        message,
+        data: {
+          driverName: driver.name,
+          reasonOfCancelation: reason,
+          driverPhone: driver.phone,
+        },
+      }),
+    );
+    await this.firebaseNotificationService.sendMessage(
+      ride.user.userNotificationToken,
+      FirebaseNotificationService.templates.captainCancelRide(message, {
+        driverName: driver.name,
+        reasonOfCancelation: reason,
+        driverPhone: driver.phone,
       }),
     );
   }

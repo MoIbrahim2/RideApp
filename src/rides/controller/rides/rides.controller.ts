@@ -18,6 +18,7 @@ import { CancelationBodyDto } from 'src/DTOs/cancelationBodyDto.dto';
 import { ConfirmationTripDto } from 'src/DTOs/confirmationtTripDto.dto';
 import { RequestRideDto } from 'src/DTOs/requestRideDto.dto';
 import { AcceptRideInterceptor } from 'src/rides/interceptors/accept-ride/accept-ride.interceptor';
+import { CaptainCancelRideInterceptor } from 'src/rides/interceptors/captain-cancel-ride/captain-cancel-ride.interceptor';
 import { ClientConfirmationInterceptor } from 'src/rides/interceptors/client-confirmation-interceptor/client-confirmation.interceptor';
 import { RequestRideInterceptor } from 'src/rides/interceptors/request-ride/request-ride.interceptor';
 
@@ -68,6 +69,7 @@ export class RidesController {
     return this.rideService.rejectRide(rideId, req['user']);
   }
   @UseGuards(AuthGuard, RestrictTO('driver'))
+  @UseInterceptors(CaptainCancelRideInterceptor)
   @Patch('captainCancelRide/:rideId')
   async cancelRide(
     @Req() req: Request,
@@ -75,7 +77,7 @@ export class RidesController {
     @Body() cancelationBody: CancelationBodyDto,
   ) {
     return this.rideService.captainCancelRide(
-      rideId,
+      req['ride'],
       req['user'],
       cancelationBody.reasonOfCancelation,
     );
