@@ -29,7 +29,7 @@ export class Refactoring {
     longitude,
     searchZone?: number,
   ) {
-    console.log(latitude, longitude, searchZone);
+    console.log('searchingForNearbyDrivers:', latitude, longitude, searchZone);
     if (!searchZone) searchZone = parseInt(process.env.SEARCH_ZONE);
 
     const nearbyDrivers = drivers
